@@ -4,14 +4,24 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate
+from frappe.utils import flt, getdate, now_datetime
 
 from reno_order.erpnext_flow import sales_order as sales_order_flow
 from reno_order.exceptions import DiscountApprovalRequiredError
+from reno_order.permissions import get_restricted_editable_fields
+
+# Set only by the app's own code (db_set / scheduler), never through a document save.
+SYSTEM_FIELDS = ("is_overdue", "installed_on", "sales_order", "delivery_note", "sales_invoice")
 
 
 class RenoOrder(Document):
+	def before_insert(self):
+		# A client can't create an order that already looks overdue, installed or linked to an SO.
+		for fieldname in SYSTEM_FIELDS:
+			self.set(fieldname, None)
+
 	def validate(self):
+		self.validate_restricted_changes()
 		self.validate_dates()
 		self.validate_items()
 		self.validate_discount_range()
@@ -27,8 +37,55 @@ class RenoOrder(Document):
 		if self.status == "Draft":
 			self.db_set("status", "Confirmed")
 
+	def before_update_after_submit(self):
+		# validate() doesn't run for updates to a submitted order, so repeat the guard here.
+		self.validate_restricted_changes()
+		if self.has_value_changed("status") and self.status == "Installed":
+			self.installed_on = now_datetime()
+
 	def on_cancel(self):
 		self.db_set("status", "Cancelled")
+
+	# ------------------------------------------------------------------ server-side guards
+
+	def validate_restricted_changes(self):
+		editable = get_restricted_editable_fields()  # None = user isn't limited to specific fields
+		before = self.get_doc_before_save()
+		if not before:
+			if editable is not None:
+				frappe.throw(
+					_("Production and installation staff cannot create Reno Orders."), frappe.PermissionError
+				)
+			return
+
+		# System fields always keep their stored values. This also stops a stale form (opened before
+		# the scheduler flagged the order, say) from silently undoing a background update.
+		for fieldname in SYSTEM_FIELDS:
+			self.set(fieldname, before.get(fieldname))
+
+		# Production / installation staff may only change their own fields. Status changes are also
+		# limited by the workflow to the transitions their role is allowed.
+		if editable is not None and (changed := self.get_changed_fields(before, exclude=editable)):
+			frappe.throw(
+				_("Your role can only update {0}. Not allowed to change: {1}").format(
+					", ".join(sorted(self.meta.get_label(f) for f in editable)), ", ".join(changed)
+				),
+				frappe.PermissionError,
+				title=_("Not Permitted"),
+			)
+
+	def get_changed_fields(self, before, exclude: set[str]) -> list[str]:
+		"""Labels of fields (and child rows) that differ from the version before this save."""
+		changed = []
+		for df in self.meta.get("fields"):
+			if df.fieldname in exclude or df.fieldtype in frappe.model.no_value_fields:
+				continue
+			if df.fieldtype in frappe.model.table_fields:
+				if _rows(before.get(df.fieldname)) != _rows(self.get(df.fieldname)):
+					changed.append(df.label)
+			elif before.get(df.fieldname) != self.get(df.fieldname):
+				changed.append(df.label)
+		return changed
 
 	# ------------------------------------------------------------------ validations
 
@@ -99,6 +156,12 @@ class RenoOrder(Document):
 			self.total_amount * flt(self.discount_percentage) / 100, self.precision("discount_amount")
 		)
 		self.grand_total = flt(self.total_amount - self.discount_amount, self.precision("grand_total"))
+
+
+def _rows(rows) -> list[dict]:
+	"""Comparable view of a child table: the values that matter, ignoring row metadata."""
+	keys = ("item_code", "description", "qty", "uom", "rate", "amount", "warehouse")
+	return [{k: row.get(k) for k in keys} for row in rows or []]
 
 
 def get_discount_rules() -> tuple[float, str]:

@@ -24,3 +24,17 @@ doc_events = {
 		"on_trash": "reno_order.erpnext_flow.sales_order.unlink_reno_order",
 	},
 }
+
+# Row-level permissions (Part 11)
+# -------------------------------
+permission_query_conditions = {"Reno Order": "reno_order.permissions.get_query_conditions"}
+has_permission = {"Reno Order": "reno_order.permissions.has_permission"}
+
+# Scheduled jobs
+# --------------
+scheduler_events = {
+	"cron": {
+		# 06:00 every day, before the installation teams start.
+		"0 6 * * *": ["reno_order.tasks.flag_overdue_installations"],
+	},
+}

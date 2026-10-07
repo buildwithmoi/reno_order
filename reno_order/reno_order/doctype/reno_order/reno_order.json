@@ -111,7 +111,8 @@
    "fieldtype": "Date",
    "in_standard_filter": 1,
    "label": "Expected Installation Date",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "default": "Standard",
@@ -304,7 +305,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-07 10:00:00.000000",
+ "modified": "2026-10-07 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Reno Order",
  "name": "Reno Order",
@@ -374,13 +375,15 @@
    "read": 1,
    "report": 1,
    "role": "Production User",
-   "submit": 1
+   "submit": 1,
+   "write": 1
   },
   {
    "print": 1,
    "read": 1,
    "role": "Site Supervisor",
-   "submit": 1
+   "submit": 1,
+   "write": 1
   },
   {
    "permlevel": 1,
