@@ -66,6 +66,7 @@ forged webhook (wrong signature)          →  HTTP 401, status unchanged
 The user waited **0.07 s**. The provider took **~34 s** across three attempts in the background.
 
 ## Run it yourself
+`demo-key` / `demo-secret` below are placeholders for the local mock only, never real credentials.
 ```bash
 python3 mock_services/logistics_api.py --port 8790 --api-key demo-key --latency 10-20 --failure-rate 0.3 \
   --webhook-url http://localhost:8000/api/method/reno_order.integrations.logistics.webhook.shipment_status \
