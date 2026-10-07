@@ -3,6 +3,7 @@
 
 import frappe
 from frappe import _
+from frappe.contacts.doctype.address.address import get_address_display
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, now_datetime
 
@@ -32,6 +33,7 @@ class RenoOrder(Document):
 
 	def validate(self):
 		self.validate_restricted_changes()
+		self.validate_customer_links()
 		self.validate_dates()
 		self.validate_items()
 		self.validate_discount_range()
@@ -103,6 +105,28 @@ class RenoOrder(Document):
 		return changed
 
 	# ------------------------------------------------------------------ validations
+
+	def validate_customer_links(self):
+		"""The address and contact must belong to the customer (the form filters them; the API can't be
+		trusted to). The formatted address is filled in here, so API clients get it too."""
+		for fieldname, doctype in (("customer_address", "Address"), ("contact_person", "Contact")):
+			name = self.get(fieldname)
+			if name and not frappe.db.exists(
+				"Dynamic Link",
+				{
+					"parenttype": doctype,
+					"parent": name,
+					"link_doctype": "Customer",
+					"link_name": self.customer,
+				},
+			):
+				frappe.throw(
+					_("{0} {1} does not belong to customer {2}.").format(
+						_(doctype), frappe.bold(name), frappe.bold(self.customer)
+					),
+					title=_("Wrong {0}").format(_(doctype)),
+				)
+		self.address_display = get_address_display(self.customer_address) if self.customer_address else None
 
 	def validate_dates(self):
 		if (
