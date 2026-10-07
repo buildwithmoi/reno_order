@@ -1,23 +1,41 @@
+# CI for the reno_order app (Part 17).
+#
+#   push / pull request ─► build a Frappe v16 bench with ERPNext ─► install the app on a fresh site
+#                       ─► run the whole test suite ─► result (green / red) on the commit or PR
+#
+# Promotion to staging and production, and rollback, are described in docs/ci-cd.md.
 name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
+# A newer push to the same branch cancels the older run.
 concurrency:
-  group: main-reno_order-${{ github.event.number }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   tests:
+    name: Server tests (Frappe v16 + ERPNext)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    name: Server
+    timeout-minutes: 45
 
+    # Throwaway databases for this run only. The root password is a test-only value for a container
+    # that exists for a few minutes; no real credentials are used anywhere in CI.
     services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mariadb-admin ping -proot" --health-interval=5s --health-timeout=2s --health-retries=10
       redis-cache:
         image: redis:alpine
         ports:
@@ -26,80 +44,49 @@ jobs:
         image: redis:alpine
         ports:
           - 11000:6379
-      mariadb:
-        image: mariadb:11.8
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
 
     steps:
-      - name: Clone
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - name: Find tests
-        run: |
-          echo "Finding tests"
-          grep -rn "def test" > /dev/null
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.14'
+          python-version: "3.14"
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
-          check-latest: true
 
-      - name: Cache pip
-        uses: actions/cache@v4
+      - name: Cache pip downloads
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
+          key: pip-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: pip-${{ runner.os }}-
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: 'echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT'
+      - name: Install MariaDB client
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
 
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install MariaDB Client
-        run: |
-          sudo apt update
-          sudo apt-get install mariadb-client
-
-      - name: Setup
+      - name: Build a Frappe v16 bench
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --frappe-branch version-16 --skip-redis-config-generation --skip-assets \
+            --python "$(which python)" ~/frappe-bench
 
-      - name: Install
+      - name: Get ERPNext and this app
         working-directory: /home/runner/frappe-bench
         run: |
-          bench get-app reno_order $GITHUB_WORKSPACE
+          bench get-app --branch version-16 --skip-assets erpnext
+          bench get-app --skip-assets reno_order "$GITHUB_WORKSPACE"
           bench setup requirements --dev
-          bench new-site --db-root-password root --admin-password admin test_site
-          bench --site test_site install-app reno_order
-          bench build
-        env:
-          CI: 'Yes'
 
-      - name: Run Tests
+      - name: Create a fresh test site
         working-directory: /home/runner/frappe-bench
         run: |
+          bench new-site test_site --db-root-password root --admin-password admin \
+            --install-app erpnext --install-app reno_order
           bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app reno_order
-        env:
-          TYPE: server
+
+      # reno_order's before_tests hook completes ERPNext's setup wizard on this empty site.
+      - name: Run tests
+        working-directory: /home/runner/frappe-bench
+        run: bench --site test_site run-tests --app reno_order

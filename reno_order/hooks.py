@@ -14,6 +14,9 @@ after_install = "reno_order.setup.install.after_install"
 before_migrate = "reno_order.setup.install.before_migrate"
 after_migrate = "reno_order.setup.install.after_migrate"
 
+# Tests: prepare a fresh site (company, chart of accounts, warehouses)
+before_tests = "reno_order.tests.utils.before_tests"
+
 # Standard ERPNext documents
 # --------------------------
 _reno_links = {

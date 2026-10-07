@@ -56,5 +56,5 @@ jobs:
       - name: Install and run pip-audit
         run: |
           pip install pip-audit
-          cd ${GITHUB_WORKSPACE}
+          cd "${GITHUB_WORKSPACE}"
           pip-audit --desc on .

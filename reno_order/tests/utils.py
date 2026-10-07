@@ -2,7 +2,7 @@
 (a developer site, or the fresh CI site)."""
 
 import frappe
-from frappe.utils import add_days, nowdate
+from frappe.utils import add_days, getdate, nowdate
 
 TEST_CUSTOMER = "_Test Reno Customer"
 TEST_ITEMS = {
@@ -10,6 +10,32 @@ TEST_ITEMS = {
 	"_Test Reno Countertop": {"is_stock_item": 1},
 	"_Test Reno Installation": {"is_stock_item": 0},
 }
+
+
+def before_tests():
+	"""hooks.before_tests: a brand-new site (e.g. in CI) has no company, warehouses or chart of accounts.
+	Complete ERPNext's setup wizard once, the way ERPNext and HRMS prepare their own test sites.
+	Does nothing on a site that's already set up."""
+	frappe.clear_cache()
+	if not frappe.get_all("Company", limit=1):
+		from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+
+		year = getdate().year
+		setup_complete(
+			{
+				"language": "english",
+				"country": "Ghana",
+				"timezone": "Africa/Accra",
+				"currency": "GHS",
+				"company_name": "_Test Reno Company",
+				"company_abbr": "_TRC",
+				"chart_of_accounts": "Standard",
+				"fy_start_date": f"{year}-01-01",
+				"fy_end_date": f"{year}-12-31",
+				"industry": "Manufacturing",
+			}
+		)
+	frappe.db.commit()
 
 
 def get_company() -> str:
@@ -133,7 +159,7 @@ def make_employee(user: str, company: str | None = None) -> str:
 			{
 				"doctype": "Employee",
 				"first_name": user.split("@")[0],
-				"gender": frappe.db.get_value("Gender", {}, "name"),
+				"gender": frappe.db.get_value("Gender", {}, "name") or _make_gender(),
 				"date_of_birth": "1990-01-01",
 				"date_of_joining": "2020-01-01",
 				"company": company or get_company(),
@@ -171,3 +197,7 @@ def confirm(doc):
 		return apply_workflow(doc, "Confirm")
 	doc.submit()
 	return doc
+
+
+def _make_gender() -> str:
+	return frappe.get_doc({"doctype": "Gender", "gender": "Other"}).insert(ignore_permissions=True).name
