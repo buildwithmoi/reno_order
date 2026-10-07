@@ -17,13 +17,13 @@ A Frappe v16 app for a company that sells, manufactures and installs custom kitc
 | Monthly value report on 100k+ rows, EXPLAIN before/after (10) | `reno_order/report/monthly_reno_order_value/` | [performance](docs/performance.md) |
 | Row- and field-level permissions (11) | `permissions.py`, permission levels, field guard in `reno_order.py` | [architecture §4](docs/architecture.md) |
 | Client-side behaviour (12) | `reno_order.js`, `reno_order_list.js` | [api §design](docs/api.md) |
-| HRMS leave debugging (13) | Analysis + fix | [hrms-leave-allocation](docs/hrms-leave-allocation.md) |
+| HRMS leave debugging (13) | `hr/leave_policy_assignment.py` (analysis + fix) | [hrms-leave-allocation](docs/hrms-leave-allocation.md) |
 | Debugging the "Installed" timeout (14) | Design + investigation | [debugging](docs/debugging.md) |
 | Tests (15), Git (16), CI/CD (17) | `reno_order/tests/`, `.github/workflows/` | [ci-cd](docs/ci-cd.md) |
 | Production and server knowledge (18) | Q&A | [production](docs/production.md) |
 
 ## Requirements
-Frappe and ERPNext **v16** · Python 3.14 · Node 24 · MariaDB 10.6+ (tested on 11.x) · Redis
+Frappe and ERPNext **v16** (HRMS v16 optional, for the Part 13 fix) · Python 3.14 · Node 24 · MariaDB 10.6+ (tested on 11.x) · Redis
 
 ## Installation
 ```bash
@@ -58,7 +58,7 @@ To try the logistics integration locally, see [docs/integrations.md](docs/integr
 ## Testing
 ```bash
 bench --site <site> set-config allow_tests true
-bench --site <site> run-tests --app reno_order                    # 70 tests
+bench --site <site> run-tests --app reno_order                    # 75 tests
 bench --site <site> run-tests --app reno_order --module reno_order.tests.test_api
 ```
 On an empty site, the app's `before_tests` hook completes ERPNext's setup wizard first.
@@ -77,7 +77,7 @@ On an empty site, the app's `before_tests` hook completes ERPNext's setup wizard
 
 Additional tests cover the workflow, the overdue job, courier retries and idempotency, credential masking, webhook signatures and replay, the report and its index.
 
-**CI:** `.github/workflows/ci.yml` builds a fresh Frappe v16 + ERPNext site and runs the suite on every push and pull request. `linter.yml` runs pre-commit (Ruff, Prettier, ESLint), the Frappe Semgrep rules and pip-audit. See [docs/ci-cd.md](docs/ci-cd.md) for staging, production and rollback.
+**CI:** `.github/workflows/ci.yml` builds a fresh Frappe v16 + ERPNext + HRMS site and runs the suite on every push and pull request. `linter.yml` runs pre-commit (Ruff, Prettier, ESLint), the Frappe Semgrep rules and pip-audit. See [docs/ci-cd.md](docs/ci-cd.md) for staging, production and rollback.
 
 ## Assumptions
 - One delivery per order. The Delivery Note is prepared when the order is **Installed**, because installation *is* the hand-over. Courier delivery of components is booked at **Ready for Installation**.
@@ -106,7 +106,8 @@ reno_order/
   setup/                install/migrate hooks, workflow definition, demo data
   devtools/perf.py      100k-row seeding and EXPLAIN/timing measurements
   permissions.py        row-level rules; tasks.py: scheduled jobs
-  tests/                70 integration tests
+  hr/                   HRMS override: fixed-entitlement leave (Part 13)
+  tests/                75 integration tests
 mock_services/          standalone mock logistics provider
 docs/                   design notes and the written answers
 ```

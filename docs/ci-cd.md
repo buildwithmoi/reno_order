@@ -3,10 +3,10 @@
 ## The pipeline today: `.github/workflows/ci.yml`
 ```
 push to main / pull request
-   └─► Build:  Python 3.14 + Node 24, `bench init --frappe-branch version-16`, get ERPNext (version-16) + this app
-   └─► Setup:  throwaway MariaDB 11.8 + Redis services, fresh `test_site` with ERPNext + reno_order
+   └─► Build:  Python 3.14 + Node 24, `bench init --frappe-branch version-16`, get ERPNext + HRMS (version-16) + this app
+   └─► Setup:  throwaway MariaDB 11.8 + Redis services, fresh `test_site` with ERPNext + HRMS + reno_order
                (the app's `before_tests` hook completes ERPNext's setup wizard on the empty site)
-   └─► Test:   bench --site test_site run-tests --app reno_order   (70 tests)
+   └─► Test:   bench --site test_site run-tests --app reno_order   (75 tests)
    └─► Result: green/red check on the commit or PR
 ```
 A second workflow, `linter.yml`, runs **pre-commit**, the **Frappe Semgrep rules** and **pip-audit** (known-vulnerable dependencies):

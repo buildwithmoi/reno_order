@@ -55,10 +55,10 @@ This is also the answer to Part 14 (see `debugging.md`).
 - **Data fixes:** **keyset-paginated batches** with a commit per batch, touching only blank values, idempotent, using plain SQL so no hooks fire. Measured: 50k rows in 3.06 s.
 
 ## 8. Testing approach
-- **70 integration tests** run as real users with real roles: totals, approval, workflow, row and field permissions, Sales Order and Delivery Note idempotency, API status codes, courier retries and webhook security, the patch and the report.
+- **75 integration tests** run as real users with real roles: totals, approval, workflow, row and field permissions, Sales Order and Delivery Note idempotency, API status codes, courier retries and webhook security, the patch and the report, and HRMS leave allocation.
 - **External HTTP is mocked:** fake responses and an injected `sleep`, so the tests are fast and deterministic. A standalone mock provider (`mock_services/`) exists for end-to-end runs.
 - Tests live in `reno_order/tests/` (outside the DocType folders), so Frappe doesn't generate ERPNext's large test dataset. Each test builds what it needs, and everything is rolled back.
-- **CI** builds a fresh Frappe v16 + ERPNext site on every push. A `before_tests` hook completes ERPNext setup.
+- **CI** builds a fresh Frappe v16 + ERPNext + HRMS site on every push. A `before_tests` hook completes ERPNext setup.
 
 ## Alternatives considered
 | Option | Why not |
