@@ -58,6 +58,7 @@ def make_item(item_code: str, is_stock_item: int = 1) -> str:
 				"stock_uom": "Nos",
 				"is_stock_item": is_stock_item,
 				"is_sales_item": 1,
+				"valuation_rate": 100,  # lets Delivery Notes be valued in tests without opening stock
 				"description": f"{item_code} for Reno Order tests",
 			}
 		).insert(ignore_permissions=True)
