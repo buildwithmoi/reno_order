@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "creation": "2026-10-07 10:00:00.000000",
+ "description": "Settings for the Reno Order app",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "approval_section",
+  "discount_approval_threshold",
+  "discount_approver_role"
+ ],
+ "fields": [
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Discount Approval"
+  },
+  {
+   "default": "10",
+   "description": "Orders with a discount above this % can only be confirmed by a user with the approver role. 0 = no limit.",
+   "fieldname": "discount_approval_threshold",
+   "fieldtype": "Percent",
+   "label": "Discount Approval Threshold (%)"
+  },
+  {
+   "default": "Sales Manager",
+   "fieldname": "discount_approver_role",
+   "fieldtype": "Link",
+   "label": "Discount Approver Role",
+   "options": "Role"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-07 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Reno Order",
+ "name": "Reno Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

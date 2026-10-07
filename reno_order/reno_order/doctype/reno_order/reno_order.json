@@ -1,0 +1,406 @@
+{
+ "actions": [],
+ "autoname": "RO-.#####",
+ "creation": "2026-10-07 10:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_section",
+  "customer",
+  "customer_name",
+  "customer_address",
+  "address_display",
+  "contact_person",
+  "col_break_dates",
+  "company",
+  "transaction_date",
+  "expected_installation_date",
+  "order_type",
+  "project",
+  "sales_person",
+  "status_section",
+  "status",
+  "is_overdue",
+  "col_break_status",
+  "assigned_supervisor",
+  "items_section",
+  "items",
+  "totals_section",
+  "currency",
+  "total_amount",
+  "discount_percentage",
+  "col_break_totals",
+  "discount_amount",
+  "grand_total",
+  "installation_section",
+  "installation_remarks",
+  "installed_on",
+  "references_section",
+  "sales_order",
+  "delivery_note",
+  "sales_invoice",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_address",
+   "fieldtype": "Link",
+   "label": "Customer Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "col_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "remember_last_selected_value": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Transaction Date",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "expected_installation_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Expected Installation Date",
+   "reqd": 1
+  },
+  {
+   "default": "Standard",
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Order Type",
+   "options": "Standard\nPremium\nCustom",
+   "reqd": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Sales Person",
+   "options": "Sales Person"
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nConfirmed\nIn Production\nReady for Installation\nInstalled\nClosed\nCancelled",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Set daily by the scheduler when the expected installation date has passed",
+   "fieldname": "is_overdue",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Installation Overdue",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "assigned_supervisor",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assigned Site Supervisor",
+   "options": "User"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Reno Order Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fetch_from": "company.default_currency",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Discount %"
+  },
+  {
+   "fieldname": "col_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Grand Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "installation_section",
+   "fieldtype": "Section Break",
+   "label": "Installation",
+   "permlevel": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "installation_remarks",
+   "fieldtype": "Small Text",
+   "label": "Installation Remarks",
+   "no_copy": 1,
+   "permlevel": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "installed_on",
+   "fieldtype": "Datetime",
+   "label": "Installed On",
+   "no_copy": 1,
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "Linked ERPNext Documents"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "no_copy": 1,
+   "options": "Sales Order",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note",
+   "no_copy": 1,
+   "options": "Delivery Note",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "no_copy": 1,
+   "options": "Sales Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Reno Order",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-10-07 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Reno Order",
+ "name": "Reno Order",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Sales User"
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Production User",
+   "submit": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "role": "Site Supervisor",
+   "submit": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Site Supervisor",
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "customer_name,status",
+ "show_title_field_in_link": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "customer_name",
+ "track_changes": 1
+}
