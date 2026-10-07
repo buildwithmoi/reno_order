@@ -37,12 +37,40 @@ CUSTOM_FIELDS = {
 }
 
 
+# Part 13 (only when HRMS is installed): leave types whose entitlement must not be prorated.
+HR_CUSTOM_FIELDS = {
+	"Leave Type": [
+		{
+			"fieldname": "fixed_entitlement",
+			"label": "Fixed Entitlement (not pro-rated)",
+			"fieldtype": "Check",
+			"insert_after": "is_optional_leave",
+			"description": "Allocate the full policy entitlement even when the employee joins mid-period "
+			"(e.g. Maternity, Paternity, Marriage Leave). Not for earned or compensatory leave.",
+		}
+	]
+}
+
+
+def create_all_custom_fields():
+	create_custom_fields(CUSTOM_FIELDS)
+	if "hrms" in frappe.get_installed_apps():
+		create_custom_fields(HR_CUSTOM_FIELDS)
+
+
+def after_app_install(app_name):
+	"""Any app installed after this one: if it's HRMS, add the HR custom fields now (otherwise they'd
+	only appear on the next migrate)."""
+	if app_name == "hrms":
+		create_custom_fields(HR_CUSTOM_FIELDS)
+
+
 def before_install():
 	create_roles()
 
 
 def after_install():
-	create_custom_fields(CUSTOM_FIELDS)
+	create_all_custom_fields()
 	sync_workflow()
 	ensure_indexes()
 
@@ -53,7 +81,7 @@ def before_migrate():
 
 
 def after_migrate():
-	create_custom_fields(CUSTOM_FIELDS)
+	create_all_custom_fields()
 	sync_workflow()
 	ensure_indexes()
 

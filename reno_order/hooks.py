@@ -13,6 +13,7 @@ before_install = "reno_order.setup.install.before_install"
 after_install = "reno_order.setup.install.after_install"
 before_migrate = "reno_order.setup.install.before_migrate"
 after_migrate = "reno_order.setup.install.after_migrate"
+after_app_install = "reno_order.setup.install.after_app_install"  # e.g. HRMS added later
 
 # Tests: prepare a fresh site (company, chart of accounts, warehouses)
 before_tests = "reno_order.tests.utils.before_tests"
@@ -32,6 +33,13 @@ doc_events = {
 	},
 	"Delivery Note": _reno_links,
 	"Sales Invoice": _reno_links,
+	"Leave Type": {"validate": "reno_order.hr.leave_policy_assignment.validate_leave_type"},
+}
+
+# HRMS (Part 13): fixed-entitlement leave isn't prorated. Only active when HRMS is installed:
+# Frappe imports the override only when the Leave Policy Assignment doctype is used.
+override_doctype_class = {
+	"Leave Policy Assignment": "reno_order.hr.leave_policy_assignment.RenoLeavePolicyAssignment",
 }
 
 # Row-level permissions (Part 11)
