@@ -25,7 +25,39 @@ ITEMS = {
 }
 
 
+# One user per role for the walkthrough. No passwords are stored here: set them in the UI
+# (User → Change Password) or give each user API keys (User → Settings → API Access).
+DEMO_USERS = {
+	"sales@reno.local": ("Sam Sales", ["Sales User"]),
+	"manager@reno.local": ("Mona Manager", ["Sales Manager", "Sales User"]),
+	"production@reno.local": ("Paul Production", ["Production User"]),
+	"supervisor@reno.local": ("Sara Supervisor", ["Site Supervisor"]),
+	"accounts@reno.local": ("Ade Accounts", ["Accounts User"]),
+	# Service account the Delivery Note automation runs as (Reno Settings → Automation User).
+	"automation@reno.local": ("Reno Automation", ["Stock User", "Sales User"]),
+}
+
+
 def setup_demo_data():
+	for email, (full_name, roles) in DEMO_USERS.items():
+		if not frappe.db.exists("User", email):
+			first_name, last_name = full_name.split(" ", 1)
+			frappe.get_doc(
+				{
+					"doctype": "User",
+					"email": email,
+					"first_name": first_name,
+					"last_name": last_name,
+					"send_welcome_email": 0,
+					"user_type": "System User",
+				}
+			).insert()
+		frappe.get_doc("User", email).add_roles(*roles)
+	settings = frappe.get_single("Reno Settings")
+	if not settings.automation_user:
+		settings.automation_user = "automation@reno.local"
+		settings.save()
+
 	for customer in CUSTOMERS:
 		if not frappe.db.exists("Customer", {"customer_name": customer["customer_name"]}):
 			frappe.get_doc(
