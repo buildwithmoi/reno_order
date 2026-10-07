@@ -10,6 +10,7 @@ from frappe.utils import flt, getdate, now_datetime
 from reno_order.erpnext_flow import sales_order as sales_order_flow
 from reno_order.erpnext_flow.delivery import queue_delivery_note
 from reno_order.exceptions import DiscountApprovalRequiredError
+from reno_order.integrations.logistics.booking import queue_shipment_booking
 from reno_order.permissions import get_restricted_editable_fields
 
 # Set only by the app's own code (db_set / scheduler), never through a document save.
@@ -22,6 +23,12 @@ SYSTEM_FIELDS = (
 	"delivery_status",
 	"delivery_attempts",
 	"delivery_error",
+	"logistics_status",
+	"logistics_reference",
+	"logistics_updated_on",
+	"logistics_attempts",
+	"logistics_next_retry",
+	"logistics_error",
 )
 
 
@@ -56,8 +63,12 @@ class RenoOrder(Document):
 			self.installed_on = now_datetime()
 
 	def on_update_after_submit(self):
-		if self.has_value_changed("status") and self.status == "Installed":
-			# Prepared in the background after this save commits, so marking Installed stays fast.
+		# Slow or follow-up work is queued to run after this save commits, so the user never waits.
+		if not self.has_value_changed("status"):
+			return
+		if self.status == "Ready for Installation":
+			queue_shipment_booking(self.name)  # external logistics API, 10-20 s (Parts 7 + 8)
+		elif self.status == "Installed":
 			queue_delivery_note(self.name)
 
 	def on_cancel(self):

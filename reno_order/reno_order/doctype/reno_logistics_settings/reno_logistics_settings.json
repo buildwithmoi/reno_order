@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "creation": "2026-10-07 15:00:00.000000",
+ "description": "Connection to the external logistics provider that delivers kitchen components to site",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "base_url",
+  "api_key",
+  "webhook_secret",
+  "col_break_timeouts",
+  "connect_timeout",
+  "read_timeout",
+  "max_attempts"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "description": "e.g. https://api.courier.example or http://127.0.0.1:8790 for the bundled mock",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "API Base URL",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "description": "Stored encrypted with the site's encryption key; never written to logs",
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "description": "Shared secret used to verify the provider's status callbacks (HMAC-SHA256)",
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Signing Secret"
+  },
+  {
+   "fieldname": "col_break_timeouts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "5",
+   "fieldname": "connect_timeout",
+   "fieldtype": "Int",
+   "label": "Connect Timeout (seconds)"
+  },
+  {
+   "default": "30",
+   "description": "The provider can take 10\u201320 s; stay above that",
+   "fieldname": "read_timeout",
+   "fieldtype": "Int",
+   "label": "Read Timeout (seconds)"
+  },
+  {
+   "default": "5",
+   "description": "Total job runs per order before it needs a manual retry",
+   "fieldname": "max_attempts",
+   "fieldtype": "Int",
+   "label": "Max Booking Attempts"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-07 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Reno Order",
+ "name": "Reno Logistics Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

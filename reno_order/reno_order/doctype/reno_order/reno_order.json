@@ -45,6 +45,14 @@
   "delivery_status",
   "delivery_attempts",
   "delivery_error",
+  "logistics_section",
+  "logistics_status",
+  "logistics_reference",
+  "logistics_updated_on",
+  "col_break_logistics",
+  "logistics_attempts",
+  "logistics_next_retry",
+  "logistics_error",
   "amended_from"
  ],
  "fields": [
@@ -329,6 +337,68 @@
    "read_only": 1
   },
   {
+   "collapsible": 1,
+   "fieldname": "logistics_section",
+   "fieldtype": "Section Break",
+   "label": "Logistics"
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Booking of the components' delivery to site with the logistics provider (made when the order is Ready for Installation)",
+   "fieldname": "logistics_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Delivery Booking",
+   "no_copy": 1,
+   "options": "\nQueued\nBooking\nBooked\nFailed\nIn Transit\nDelivered",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistics_reference",
+   "fieldtype": "Data",
+   "label": "Shipment ID",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistics_updated_on",
+   "fieldtype": "Datetime",
+   "label": "Booking Updated On",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_logistics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistics_attempts",
+   "fieldtype": "Int",
+   "label": "Booking Attempts",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistics_next_retry",
+   "fieldtype": "Datetime",
+   "label": "Next Automatic Retry",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistics_error",
+   "fieldtype": "Small Text",
+   "label": "Last Booking Error",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -340,7 +410,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-07 14:00:00.000000",
+ "modified": "2026-10-07 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Reno Order",
  "name": "Reno Order",

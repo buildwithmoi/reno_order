@@ -39,7 +39,10 @@ has_permission = {"Reno Order": "reno_order.permissions.has_permission"}
 # Scheduled jobs
 # --------------
 scheduler_events = {
-	"hourly": ["reno_order.erpnext_flow.delivery.retry_failed_delivery_notes"],
+	"hourly": [
+		"reno_order.erpnext_flow.delivery.retry_failed_delivery_notes",
+		"reno_order.integrations.logistics.booking.retry_failed_bookings",
+	],
 	"cron": {
 		# 06:00 every day, before the installation teams start.
 		"0 6 * * *": ["reno_order.tasks.flag_overdue_installations"],

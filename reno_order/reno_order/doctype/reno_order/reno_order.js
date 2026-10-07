@@ -136,6 +136,11 @@ function show_status_headline(frm) {
 	const { is_overdue, delivery_status, delivery_note, delivery_error } = frm.doc;
 	if (is_overdue) {
 		frm.dashboard.set_headline_alert(__("Installation is overdue: the expected installation date has passed."), "red");
+	} else if (frm.doc.logistics_status === "Failed") {
+		frm.dashboard.set_headline_alert(
+			__("Delivery booking with the logistics provider failed: {0}", [frappe.utils.escape_html(frm.doc.logistics_error || "")]),
+			"red"
+		);
 	} else if (delivery_status === "Failed") {
 		frm.dashboard.set_headline_alert(
 			__("Delivery Note automation failed: {0}", [frappe.utils.escape_html(delivery_error || "")]),
@@ -175,6 +180,14 @@ function add_buttons(frm) {
 
 	if (doc.status === "Ready for Installation" && frappe.user.has_role("Site Supervisor") && frm.perm[0]?.write) {
 		frm.add_custom_button(__("Mark as Installed"), () => mark_as_installed(frm)).addClass("btn-primary");
+	}
+
+	if (doc.logistics_status === "Failed" && frm.perm[0]?.write) {
+		frm.add_custom_button(__("Retry Delivery Booking"), async () => {
+			await frappe.xcall("reno_order.integrations.logistics.booking.retry_shipment_booking", { reno_order: doc.name });
+			frappe.show_alert({ message: __("Booking queued again"), indicator: "blue" });
+			frm.reload_doc();
+		});
 	}
 
 	if (doc.delivery_status === "Failed" && frm.perm[0]?.write) {
