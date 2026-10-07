@@ -44,6 +44,7 @@ def before_install():
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS)
 	sync_workflow()
+	ensure_indexes()
 
 
 def before_migrate():
@@ -54,6 +55,16 @@ def before_migrate():
 def after_migrate():
 	create_custom_fields(CUSTOM_FIELDS)
 	sync_workflow()
+	ensure_indexes()
+
+
+def ensure_indexes():
+	"""Frappe only calls on_doctype_update when the DocType definition itself is re-synced, so an index
+	added in code would never reach a site whose DocType didn't change. Run it on every migrate
+	(ADD INDEX IF NOT EXISTS, so repeating it is free)."""
+	from reno_order.reno_order.doctype.reno_order.reno_order import on_doctype_update
+
+	on_doctype_update()
 
 
 def create_roles():

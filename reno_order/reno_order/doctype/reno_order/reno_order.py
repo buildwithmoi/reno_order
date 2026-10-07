@@ -208,6 +208,18 @@ class RenoOrder(Document):
 		self.grand_total = flt(self.total_amount - self.discount_amount, self.precision("grand_total"))
 
 
+# Covering index for the "Monthly Reno Order Value" report (Part 10): equality on company, range on
+# transaction_date, then status and grand_total so the query never has to read the table rows.
+REPORT_INDEX = ("company", "transaction_date", "status", "grand_total")
+REPORT_INDEX_NAME = "company_date_status_total_index"
+
+
+def on_doctype_update():
+	"""Called by Frappe whenever the DocType is synced (bench migrate). ADD INDEX IF NOT EXISTS: safe
+	to repeat; InnoDB builds a secondary index online, so reads and writes continue meanwhile."""
+	frappe.db.add_index("Reno Order", list(REPORT_INDEX), index_name=REPORT_INDEX_NAME)
+
+
 def _rows(rows) -> list[dict]:
 	"""Comparable view of a child table: the values that matter, ignoring row metadata."""
 	keys = ("item_code", "description", "qty", "uom", "rate", "amount", "warehouse")
