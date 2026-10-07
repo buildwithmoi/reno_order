@@ -115,8 +115,7 @@ def setup_demo_data():
 				}
 			).insert()
 
-	setup_manufacturing_and_buying()
-	frappe.db.commit()
+	setup_manufacturing_and_buying()  # bench execute commits when the function returns
 	print("Demo users, customers, items, BOM, opening stock and suppliers are ready.")
 
 

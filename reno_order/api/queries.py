@@ -8,7 +8,9 @@ from reno_order.reno_order.doctype.reno_order.reno_order import get_discount_rul
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def site_supervisor_query(doctype, txt, searchfield, start, page_len, filters):
+def site_supervisor_query(
+	doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict | None = None
+):
 	"""Link search for "Assigned Site Supervisor": enabled users who hold the Site Supervisor role."""
 	return frappe.db.sql(
 		"""

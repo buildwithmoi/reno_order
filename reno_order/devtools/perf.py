@@ -18,6 +18,7 @@ import time
 from datetime import date, timedelta
 
 import frappe
+from frappe import _
 
 from reno_order.reno_order.doctype.reno_order.reno_order import REPORT_INDEX, REPORT_INDEX_NAME
 from reno_order.reno_order.report.monthly_reno_order_value.monthly_reno_order_value import MONTHLY_QUERY
@@ -37,7 +38,7 @@ DOCSTATUS = {"Draft": 0, "Cancelled": 2}
 
 def _guard():
 	if not frappe.conf.developer_mode:
-		frappe.throw("Performance tooling only runs on a developer-mode site.")
+		frappe.throw(_("Performance tooling only runs on a developer-mode site."))
 
 
 def seed(count: int = 100_000, months: int = 24, batch: int = 2_000):
@@ -77,12 +78,13 @@ def seed(count: int = 100_000, months: int = 24, batch: int = 2_000):
 			rows = []
 	if rows:
 		_insert(rows)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep -- dev-only tool run by bench execute: keep each step's work
 	print(f"Seeded {count} orders; table now has {frappe.db.count('Reno Order')} rows")
 
 
 def _insert(rows):
-	frappe.db.sql(
+	# Placeholders only ("(%s, %s, …)" per row); the values are bound as parameters.
+	frappe.db.sql(  # nosemgrep
 		"""
 		INSERT INTO `tabReno Order` (name, creation, modified, modified_by, owner, docstatus, status,
 			customer_name, company, currency, transaction_date, expected_installation_date, order_type,
@@ -103,13 +105,14 @@ def _insert(rows):
 def clear():
 	_guard()
 	frappe.db.sql("DELETE FROM `tabReno Order` WHERE name LIKE %s", f"{PREFIX}%")
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep -- dev-only tool run by bench execute: keep each step's work
 	print("Removed synthetic orders")
 
 
 def drop_report_index():
 	_guard()
-	frappe.db.sql(f"ALTER TABLE `tabReno Order` DROP INDEX IF EXISTS `{REPORT_INDEX_NAME}`")
+	# DDL can't take parameters; the index name is a code constant.
+	frappe.db.sql(f"ALTER TABLE `tabReno Order` DROP INDEX IF EXISTS `{REPORT_INDEX_NAME}`")  # nosemgrep
 	print(f"Dropped {REPORT_INDEX_NAME}")
 
 
@@ -130,7 +133,8 @@ def measure(runs: int = 7):
 	print(f"Rows in table: {frappe.db.count('Reno Order')}")
 	print(f"Indexes: {sorted({r[2] for r in frappe.db.sql('SHOW INDEX FROM `tabReno Order`')})}\n")
 
-	explain = frappe.db.sql(f"EXPLAIN {query}", params, as_dict=True)
+	# The report's constant SQL; filter values are bound as parameters.
+	explain = frappe.db.sql(f"EXPLAIN {query}", params, as_dict=True)  # nosemgrep
 	for row in explain:
 		print(
 			" | ".join(f"{k}={row[k]}" for k in ("type", "possible_keys", "key", "key_len", "rows", "Extra"))
@@ -142,7 +146,7 @@ def measure(runs: int = 7):
 	print("\nInnoDB reads for one run:", {k: after[k] - before[k] for k in after if after[k] - before[k]})
 
 	timings = []
-	for _ in range(runs):
+	for _run in range(runs):
 		started = time.perf_counter()
 		result = frappe.db.sql(query, params)
 		timings.append((time.perf_counter() - started) * 1000)
@@ -170,7 +174,7 @@ def measure_patch(blank: int = 50_000):
 		"UPDATE `tabReno Order` SET order_type = 'Premium' WHERE name LIKE %s ORDER BY name DESC LIMIT 100",
 		(f"{PREFIX}%",),
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep -- dev-only tool run by bench execute: keep each step's work
 	print(
 		"Blank before:",
 		frappe.db.sql("SELECT COUNT(*) FROM `tabReno Order` WHERE IFNULL(order_type,'')=''")[0][0],

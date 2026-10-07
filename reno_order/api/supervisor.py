@@ -68,7 +68,7 @@ def add_installation_remarks(reno_order: str, remarks: str) -> dict:
 	_require_installation_stage(doc)
 
 	entry = f"[{format_datetime(now_datetime(), 'yyyy-MM-dd HH:mm')} · {frappe.session.user}] {remarks}"
-	doc.installation_remarks = "\n".join(filter(None, [doc.installation_remarks, entry]))
+	doc.installation_remarks = "\n".join(part for part in (doc.installation_remarks, entry) if part)
 	doc.save()
 	return _summary(doc)
 

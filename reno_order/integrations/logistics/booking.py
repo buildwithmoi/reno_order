@@ -65,7 +65,8 @@ def book_shipment(reno_order: str, sleep=time.sleep) -> str | None:
 	if not cint(settings.enabled) or not _claim(reno_order):
 		return None  # disabled, already booked, or another worker is on it
 	if not frappe.in_test:  # tests run inside one transaction that is rolled back afterwards
-		frappe.db.commit()  # make the claim visible and release the row before the slow network call
+		# Make the claim visible and release the row lock before the slow network call (claim → commit → call).
+		frappe.db.commit()  # nosemgrep
 
 	automation_user = frappe.db.get_single_value("Reno Settings", "automation_user") or "Administrator"
 	with run_as(automation_user):

@@ -67,7 +67,9 @@ def execute(filters=None):
 
 def get_monthly_totals(filters) -> dict:
 	condition = get_query_conditions(frappe.session.user)
-	query = MONTHLY_QUERY.format(permission_condition=f"AND {condition}" if condition else "")
+	# Only the server-generated permission condition is formatted in; user filters are bound as parameters.
+	permission_condition = f"AND {condition}" if condition else ""
+	query = MONTHLY_QUERY.format(permission_condition=permission_condition)  # nosemgrep
 	return {(r.month, r.status): r for r in frappe.db.sql(query, filters, as_dict=True)}
 
 

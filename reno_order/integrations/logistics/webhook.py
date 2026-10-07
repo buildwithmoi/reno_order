@@ -24,7 +24,9 @@ MAX_AGE_SECONDS = 300
 STATUS_MAP = {"scheduled": "Booked", "in_transit": "In Transit", "delivered": "Delivered"}
 
 
-@frappe.whitelist(allow_guest=True, methods=["POST"])
+# Guest access is required (the provider has no Frappe login). process_status_update() rejects anything
+# without a valid HMAC signature and a fresh timestamp before touching data.
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep
 def shipment_status():
 	return process_status_update(
 		frappe.request.get_data(),
