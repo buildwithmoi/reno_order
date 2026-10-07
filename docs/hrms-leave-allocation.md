@@ -45,9 +45,9 @@
 
 **Option B: a small customization (implemented here).** Use this if the business wants the yearly policy to keep granting these entitlements up front:
 1. A Leave Type checkbox, **Fixed Entitlement (not pro-rated)**, added as a custom field by `setup/install.py`. It's only added when HRMS is installed, including when HRMS is installed *later* (`after_app_install`).
-2. A subclass registered through the official **`override_doctype_class`** hook (`reno_order/hr/leave_policy_assignment.py`):
+2. A mixin registered through Frappe v16's **`extend_doctype_class`** hook (`reno_order/hr/leave_policy_assignment.py`). Frappe places it in front of HRMS's controller, so `super()` is HRMS's own method:
    ```python
-   class RenoLeavePolicyAssignment(LeavePolicyAssignment):
+   class FixedEntitlementMixin:
    	def get_new_leaves(self, annual_allocation, leave_details, date_of_joining):
    		if frappe.get_cached_value("Leave Type", leave_details.name, "fixed_entitlement"):
    			return flt(annual_allocation)
@@ -55,7 +55,9 @@
    ```
 3. A validation stops the flag being set on earned or compensatory leave types.
 
-**Configuration or customization?** Option A is configuration. Option B needs a *small* customization, but **no HRMS core change**: one overridden method that defers to HRMS for everything else, plus one custom field. Upgrades stay safe. The one caveat with `override_doctype_class` is that only one app can override a given doctype. If another installed app also overrides Leave Policy Assignment, merge the two into a single subclass. Applying the flag to past allocations is a separate, deliberate step: cancel and re-submit the affected assignments, or adjust the allocations manually.
+**Configuration or customization?** Option A is configuration. Option B needs a *small* customization, but **no HRMS core change**: one overridden method that defers to HRMS for everything else, plus one custom field. Upgrades stay safe. **Extending rather than overriding:**
+- `override_doctype_class` *replaces* the controller, and only one app can win. A second app overriding Leave Policy Assignment would silently disable this fix, or be disabled by it.
+- `extend_doctype_class` stacks mixins, so several apps can extend the same doctype. The mixin also doesn't import HRMS, so the app loads fine on sites without it. Applying the flag to past allocations is a separate, deliberate step: cancel and re-submit the affected assignments, or adjust the allocations manually.
 
 ## Test cases (`reno_order/tests/test_hrms_leave.py`, run when HRMS is installed)
 | Test | Asserts |

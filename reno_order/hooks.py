@@ -41,9 +41,10 @@ doc_events = {
 }
 
 # HRMS (Part 13): fixed-entitlement leave isn't prorated. Only active when HRMS is installed:
-# Frappe imports the override only when the Leave Policy Assignment doctype is used.
-override_doctype_class = {
-	"Leave Policy Assignment": "reno_order.hr.leave_policy_assignment.RenoLeavePolicyAssignment",
+# Frappe loads the extension only when the Leave Policy Assignment doctype is used. Extending (v16)
+# mixes our class in front of HRMS's; override_doctype_class would replace it, and only one app can.
+extend_doctype_class = {
+	"Leave Policy Assignment": ["reno_order.hr.leave_policy_assignment.FixedEntitlementMixin"],
 }
 
 # Row-level permissions (Part 11)
