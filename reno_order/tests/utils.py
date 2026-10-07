@@ -115,6 +115,53 @@ def make_reno_order(*, items=None, discount=0, submit=False, do_not_save=False, 
 	return doc
 
 
+def advance(doc, *actions):
+	"""Apply workflow actions in order (e.g. "Confirm", "Start Production") and return the latest doc."""
+	from frappe.model.workflow import apply_workflow
+
+	for action in actions:
+		doc = apply_workflow(frappe.get_doc(doc.doctype, doc.name), action)
+	return doc
+
+
+def make_employee(user: str, company: str | None = None) -> str:
+	if existing := frappe.db.get_value("Employee", {"user_id": user}):
+		return existing
+	return (
+		frappe.get_doc(
+			{
+				"doctype": "Employee",
+				"first_name": user.split("@")[0],
+				"gender": frappe.db.get_value("Gender", {}, "name"),
+				"date_of_birth": "1990-01-01",
+				"date_of_joining": "2020-01-01",
+				"company": company or get_company(),
+				"user_id": user,
+				"status": "Active",
+			}
+		)
+		.insert(ignore_permissions=True)
+		.name
+	)
+
+
+def make_sales_person(name: str, parent: str | None = None, is_group: int = 0, employee: str | None = None):
+	if not frappe.db.exists("Sales Person", name):
+		frappe.get_doc(
+			{
+				"doctype": "Sales Person",
+				"sales_person_name": name,
+				"parent_sales_person": parent
+				or frappe.db.get_value(
+					"Sales Person", {"is_group": 1, "parent_sales_person": ("is", "not set")}
+				),
+				"is_group": is_group,
+				"employee": employee,
+			}
+		).insert(ignore_permissions=True)
+	return name
+
+
 def confirm(doc):
 	"""Confirm (submit) an order through the workflow when one is active, otherwise a plain submit."""
 	if frappe.db.get_value("Workflow", {"document_type": "Reno Order", "is_active": 1}):
