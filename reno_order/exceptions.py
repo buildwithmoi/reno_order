@@ -13,3 +13,15 @@ class DiscountApprovalRequiredError(frappe.ValidationError):
 
 class DuplicateSalesOrderError(frappe.ValidationError):
 	"""An active (draft or submitted) Sales Order already exists for the Reno Order."""
+
+
+class InvalidStatusTransitionError(frappe.ValidationError):
+	"""The requested status (or action) isn't allowed from the order's current status for this user."""
+
+	http_status_code = 409  # Conflict with the order's current state
+
+
+class InvalidInputError(frappe.ValidationError):
+	"""A request parameter is missing or malformed (empty remarks, a non-image upload, …)."""
+
+	http_status_code = 422  # Unprocessable: the request is understood but its content is invalid
