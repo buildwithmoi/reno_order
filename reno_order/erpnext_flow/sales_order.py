@@ -104,15 +104,3 @@ def validate_sales_order(doc, method=None):
 		)
 
 	ensure_no_active_sales_order(doc.reno_order, exclude=doc.name)
-
-
-def link_reno_order(doc, method=None):
-	"""after_insert: record the new Sales Order on its Reno Order (including amended Sales Orders)."""
-	if doc.get("reno_order"):
-		frappe.db.set_value("Reno Order", doc.reno_order, "sales_order", doc.name, update_modified=False)
-
-
-def unlink_reno_order(doc, method=None):
-	"""on_cancel / on_trash: free the Reno Order so a new Sales Order can be created."""
-	if doc.get("reno_order") and frappe.db.get_value("Reno Order", doc.reno_order, "sales_order") == doc.name:
-		frappe.db.set_value("Reno Order", doc.reno_order, "sales_order", None, update_modified=False)

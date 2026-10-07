@@ -7,11 +7,21 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate, now_datetime
 
 from reno_order.erpnext_flow import sales_order as sales_order_flow
+from reno_order.erpnext_flow.delivery import queue_delivery_note
 from reno_order.exceptions import DiscountApprovalRequiredError
 from reno_order.permissions import get_restricted_editable_fields
 
 # Set only by the app's own code (db_set / scheduler), never through a document save.
-SYSTEM_FIELDS = ("is_overdue", "installed_on", "sales_order", "delivery_note", "sales_invoice")
+SYSTEM_FIELDS = (
+	"is_overdue",
+	"installed_on",
+	"sales_order",
+	"delivery_note",
+	"sales_invoice",
+	"delivery_status",
+	"delivery_attempts",
+	"delivery_error",
+)
 
 
 class RenoOrder(Document):
@@ -42,6 +52,11 @@ class RenoOrder(Document):
 		self.validate_restricted_changes()
 		if self.has_value_changed("status") and self.status == "Installed":
 			self.installed_on = now_datetime()
+
+	def on_update_after_submit(self):
+		if self.has_value_changed("status") and self.status == "Installed":
+			# Prepared in the background after this save commits, so marking Installed stays fast.
+			queue_delivery_note(self.name)
 
 	def on_cancel(self):
 		self.db_set("status", "Cancelled")

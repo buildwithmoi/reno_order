@@ -41,6 +41,10 @@
   "sales_order",
   "delivery_note",
   "sales_invoice",
+  "col_break_delivery",
+  "delivery_status",
+  "delivery_attempts",
+  "delivery_error",
   "amended_from"
  ],
  "fields": [
@@ -294,6 +298,37 @@
    "read_only": 1
   },
   {
+   "fieldname": "col_break_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Set when the order is marked Installed and a Delivery Note is prepared in the background",
+   "fieldname": "delivery_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Delivery Note Automation",
+   "no_copy": 1,
+   "options": "\nQueued\nPrepared\nFailed",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_attempts",
+   "fieldtype": "Int",
+   "label": "Automation Attempts",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_error",
+   "fieldtype": "Small Text",
+   "label": "Last Automation Error",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -305,7 +340,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-07 13:00:00.000000",
+ "modified": "2026-10-07 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Reno Order",
  "name": "Reno Order",

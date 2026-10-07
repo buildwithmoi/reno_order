@@ -7,7 +7,10 @@
  "field_order": [
   "approval_section",
   "discount_approval_threshold",
-  "discount_approver_role"
+  "discount_approver_role",
+  "automation_section",
+  "automation_user",
+  "auto_submit_delivery_note"
  ],
  "fields": [
   {
@@ -28,11 +31,30 @@
    "fieldtype": "Link",
    "label": "Discount Approver Role",
    "options": "Role"
+  },
+  {
+   "fieldname": "automation_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery Note Automation"
+  },
+  {
+   "description": "Background jobs create Delivery Notes as this user. Use a service account with the Stock User and Sales User roles. Empty = Administrator (fine for demos, not recommended in production).",
+   "fieldname": "automation_user",
+   "fieldtype": "Link",
+   "label": "Automation User",
+   "options": "User"
+  },
+  {
+   "default": "0",
+   "description": "Off: the Delivery Note is prepared as a draft for the warehouse to check and submit. On: it is submitted straight away (stock leaves the warehouse).",
+   "fieldname": "auto_submit_delivery_note",
+   "fieldtype": "Check",
+   "label": "Submit Delivery Note Automatically"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-10-07 10:00:00.000000",
+ "modified": "2026-10-07 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Reno Order",
  "name": "Reno Settings",
