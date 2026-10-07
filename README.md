@@ -10,7 +10,7 @@ A Frappe v16 app for a company that sells, manufactures and installs custom kitc
 | Reno Order DocType, server-side totals, validations, discount approval, Sales Order creation with duplicate protection (1) | `reno_order/reno_order/doctype/reno_order/`, `erpnext_flow/sales_order.py` | [architecture](docs/architecture.md) |
 | Workflow, roles, overdue-installation scheduler (2) | `setup/workflow.py`, `tasks.py` | [architecture §3–4](docs/architecture.md) |
 | SO → DN → SI with references; Delivery Note automation on *Installed* (2, 3) | `erpnext_flow/links.py`, `erpnext_flow/delivery.py` | [erpnext-integration](docs/erpnext-integration.md) |
-| Manufacturing and buying scenarios (4, 5) | ERPNext configuration, linked through `reno_order` | [manufacturing-and-buying](docs/manufacturing-and-buying.md) |
+| Manufacturing and buying scenarios (4, 5) | Standard ERPNext flows; demo masters in `setup/demo.py`; reference kept by `erpnext_flow/links.py` | [manufacturing-and-buying](docs/manufacturing-and-buying.md) |
 | Site Supervisor REST API (6) | `api/supervisor.py` | [api](docs/api.md) |
 | Logistics provider integration + webhook (7); background processing (8) | `integrations/logistics/`, `mock_services/logistics_api.py` | [integrations](docs/integrations.md) |
 | Backfill patch for ~50k orders (9) | `patches/v1_0/backfill_order_type.py` | [data-migration](docs/data-migration.md) |
@@ -39,7 +39,7 @@ Installing creates:
 - `reno_order` link fields on ERPNext doctypes
 - the report index
 
-**Optional demo data:** customers, kitchen items and prices, one user per role, and an automation service account:
+**Optional demo data:** customers, kitchen items and prices, one user per role, an automation service account, and for Parts 4 and 5 the cabinet BOM, workstations, operations, opening stock and suppliers:
 ```bash
 bench --site <site> execute reno_order.setup.demo.setup_demo_data
 ```
@@ -58,7 +58,7 @@ To try the logistics integration locally, see [docs/integrations.md](docs/integr
 ## Testing
 ```bash
 bench --site <site> set-config allow_tests true
-bench --site <site> run-tests --app reno_order                    # 75 tests
+bench --site <site> run-tests --app reno_order                    # 80 tests
 bench --site <site> run-tests --app reno_order --module reno_order.tests.test_api
 ```
 On an empty site, the app's `before_tests` hook completes ERPNext's setup wizard first.
@@ -75,7 +75,7 @@ On an empty site, the app's `before_tests` hook completes ERPNext's setup wizard
 | Installed status processing | `test_erpnext_flow` (queued, idempotent, failure + retry, through to Sales Invoice) |
 | Patch behaviour | `test_patch_and_report.TestBackfillOrderTypePatch` |
 
-Additional tests cover the workflow, the overdue job, courier retries and idempotency, credential masking, webhook signatures and replay, the report and its index.
+Additional tests cover the workflow, the overdue job, the Work Order and Purchase Order references (Parts 4, 5), courier retries and idempotency, credential masking, webhook signatures and replay, the report and its index.
 
 **CI:** `.github/workflows/ci.yml` builds a fresh Frappe v16 + ERPNext + HRMS site and runs the suite on every push and pull request. `linter.yml` runs pre-commit (Ruff, Prettier, ESLint), the Frappe Semgrep rules and pip-audit. See [docs/ci-cd.md](docs/ci-cd.md) for staging, production and rollback.
 
@@ -107,7 +107,7 @@ reno_order/
   devtools/perf.py      100k-row seeding and EXPLAIN/timing measurements
   permissions.py        row-level rules; tasks.py: scheduled jobs
   hr/                   HRMS override: fixed-entitlement leave (Part 13)
-  tests/                75 integration tests
+  tests/                80 integration tests
 mock_services/          standalone mock logistics provider
 docs/                   design notes and the written answers
 ```

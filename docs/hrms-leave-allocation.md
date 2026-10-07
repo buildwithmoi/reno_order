@@ -14,19 +14,20 @@
 1. Submitting the assignment calls `grant_leave_alloc_for_employee()`. That loops over every Leave Policy Detail and calls `create_leave_allocation()`, which calls **`get_new_leaves()`**:
    ```python
    if leave_details.is_compensatory:
-       new_leaves_allocated = 0
+   	new_leaves_allocated = 0
    elif leave_details.is_earned_leave and current_date < getdate(self.effective_to):
-       new_leaves_allocated = self.get_leaves_for_passed_period(...)
+   	new_leaves_allocated = self.get_leaves_for_passed_period(...)
    else:
-       # calculate pro-rated leaves for other leave types
-       new_leaves_allocated = calculate_pro_rated_leaves(
-           annual_allocation, date_of_joining, self.effective_from, self.effective_to, is_earned_leave=False)
+   	# calculate pro-rated leaves for other leave types
+   	new_leaves_allocated = calculate_pro_rated_leaves(
+   		annual_allocation, date_of_joining, self.effective_from, self.effective_to, is_earned_leave=False
+   	)
    ```
 2. **`calculate_pro_rated_leaves()`**:
    ```python
    if not leaves or getdate(date_of_joining) <= getdate(period_start_date):
-       return leaves
-   actual_period   = date_diff(period_end_date, date_of_joining) + 1
+   	return leaves
+   actual_period = date_diff(period_end_date, date_of_joining) + 1
    complete_period = date_diff(period_end_date, period_start_date) + 1
    leaves *= actual_period / complete_period
    return rounded(leaves)
@@ -47,10 +48,10 @@
 2. A subclass registered through the official **`override_doctype_class`** hook (`reno_order/hr/leave_policy_assignment.py`):
    ```python
    class RenoLeavePolicyAssignment(LeavePolicyAssignment):
-       def get_new_leaves(self, annual_allocation, leave_details, date_of_joining):
-           if frappe.get_cached_value("Leave Type", leave_details.name, "fixed_entitlement"):
-               return flt(annual_allocation)
-           return super().get_new_leaves(annual_allocation, leave_details, date_of_joining)
+   	def get_new_leaves(self, annual_allocation, leave_details, date_of_joining):
+   		if frappe.get_cached_value("Leave Type", leave_details.name, "fixed_entitlement"):
+   			return flt(annual_allocation)
+   		return super().get_new_leaves(annual_allocation, leave_details, date_of_joining)
    ```
 3. A validation stops the flag being set on earned or compensatory leave types.
 

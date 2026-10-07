@@ -10,6 +10,8 @@
   - A **`reno_order` link field** is added (in code) to SO, DN, SI, Work Order, Material Request and Purchase Order.
   - It isn't `no_copy`, so **ERPNext's own mappers carry it forward**.
   - doc_events keep the reverse links on the Reno Order.
+  - Where ERPNext builds a document **without** its mapper (Work Order from a Sales Order, Purchase Order from a Supplier Quotation), a `validate` hook takes the reference from the Sales Order or Material Request its rows point at.
+  - The Reno Order's **Connections** tab lists all of them.
   - There is no copy of ERPNext's mapping logic.
 
 ## 2. The server is the source of truth
@@ -55,7 +57,7 @@ This is also the answer to Part 14 (see `debugging.md`).
 - **Data fixes:** **keyset-paginated batches** with a commit per batch, touching only blank values, idempotent, using plain SQL so no hooks fire. Measured: 50k rows in 3.06 s.
 
 ## 8. Testing approach
-- **75 integration tests** run as real users with real roles: totals, approval, workflow, row and field permissions, Sales Order and Delivery Note idempotency, API status codes, courier retries and webhook security, the patch and the report, and HRMS leave allocation.
+- **80 integration tests** run as real users with real roles: totals, approval, workflow, row and field permissions, Sales Order and Delivery Note idempotency, API status codes, courier retries and webhook security, the patch and the report, manufacturing and buying references, and HRMS leave allocation.
 - **External HTTP is mocked:** fake responses and an injected `sleep`, so the tests are fast and deterministic. A standalone mock provider (`mock_services/`) exists for end-to-end runs.
 - Tests live in `reno_order/tests/` (outside the DocType folders), so Frappe doesn't generate ERPNext's large test dataset. Each test builds what it needs, and everything is rolled back.
 - **CI** builds a fresh Frappe v16 + ERPNext + HRMS site on every push. A `before_tests` hook completes ERPNext setup.

@@ -11,6 +11,7 @@ All notable changes to this app. The format follows [Keep a Changelog](https://k
 - **Row-level permissions:** own / assigned / Sales Person team / assigned supervisor / confirmed orders for production. **Field-level protection** for operational roles and system-managed fields.
 - **Daily job** that flags overdue installations and notifies Sales Managers.
 - **Order-to-cash references:** `reno_order` on SO, DN, SI, Work Order, Material Request and Purchase Order, with reverse links kept by doc_events.
+- **Manufacturing and buying (Parts 4, 5):** `reno_order` recovered on Work Orders made from a Sales Order and on Purchase Orders made from a Supplier Quotation; a Connections tab on Reno Order; demo BOM with operations and workstations, opening stock and suppliers.
 - **Delivery Note automation** on *Installed*: after commit, deduplicated, idempotent, run as a configured automation user, failures recorded and retried.
 - **Site Supervisor REST API:** status, remarks and site photos, with token authentication and meaningful HTTP errors (401/403/404/409/422).
 - **Form behaviour:** customer-scoped filters, default rates, live totals, discount hint, status headline, status-based buttons. **List view** status colours.
@@ -18,5 +19,5 @@ All notable changes to this app. The format follows [Keep a Changelog](https://k
 - **Patch** backfilling `order_type` for existing orders: keyset batches, idempotent.
 - **Monthly Reno Order Value** report with a covering index. Developer tooling to reproduce the 100k-row measurements.
 - **HRMS fix:** Leave Types flagged *Fixed Entitlement* are no longer prorated for mid-year joiners (`override_doctype_class`, no HRMS core change).
-- **75 integration tests**, a CI workflow on a fresh Frappe v16 + ERPNext + HRMS site, and linting (pre-commit, Semgrep, pip-audit).
+- **80 integration tests**, a CI workflow on a fresh Frappe v16 + ERPNext + HRMS site, and linting (pre-commit, Semgrep, pip-audit).
 - **Documentation:** architecture, ERPNext integration, API, integrations, debugging, performance, data migration, CI/CD, manufacturing and buying, HRMS leave analysis, production operations.
