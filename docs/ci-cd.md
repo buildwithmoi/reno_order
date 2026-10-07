@@ -9,9 +9,9 @@ push to main / pull request
    └─► Test:   bench --site test_site run-tests --app reno_order   (80 tests)
    └─► Result: green/red check on the commit or PR
 ```
-A second workflow, `linter.yml`, runs **pre-commit**, the **Frappe Semgrep rules** and **pip-audit** (known-vulnerable dependencies):
+A second workflow, `linter.yml` (every push to `main` and every pull request), runs **pre-commit**, the **Frappe Semgrep rules** and **pip-audit** (known-vulnerable dependencies):
 - pre-commit runs Ruff lint + format, Prettier, ESLint, and JSON / YAML / TOML checks
-- the Semgrep rules catch common Frappe security and correctness mistakes
+- the Semgrep rules catch common Frappe security and correctness mistakes. The few deliberate exceptions (the guest webhook, the courier claim's commit, the service-account switch, the report's permission SQL) carry a comment explaining why, next to `# nosemgrep`
 
 Both workflows pass `actionlint`, and pre-commit passes locally on every file.
 

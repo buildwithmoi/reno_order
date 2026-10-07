@@ -1,6 +1,10 @@
+# Linting and security checks (Part 16): pre-commit (Ruff, Prettier, ESLint, JSON / YAML / TOML),
+# the Frappe Semgrep rules, and pip-audit for known-vulnerable dependencies.
 name: Linters
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -15,37 +19,47 @@ jobs:
   linter:
     name: 'Frappe Linter'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
-          cache: pip
-      - uses: pre-commit/action@v3.0.0
 
+      - name: Cache pre-commit environments
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: pre-commit (Ruff, Prettier, ESLint, file checks)
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files --show-diff-on-failure
+
+      # Cloned outside the workspace: the rules repo's own test files contain deliberate violations.
       - name: Download Semgrep rules
-        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-semgrep-rules
+        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git "${RUNNER_TEMP}/frappe-semgrep-rules"
 
       - name: Run Semgrep rules
         run: |
           pip install semgrep
-          semgrep ci --config ./frappe-semgrep-rules/rules --config r/python.lang.correctness
+          semgrep scan --error --metrics off \
+            --config "${RUNNER_TEMP}/frappe-semgrep-rules/rules" --config r/python.lang.correctness .
 
   deps-vulnerable-check:
     name: 'Vulnerable Dependency Check'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Cache pip
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py') }}
