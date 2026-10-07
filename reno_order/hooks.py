@@ -33,6 +33,10 @@ doc_events = {
 	},
 	"Delivery Note": _reno_links,
 	"Sales Invoice": _reno_links,
+	# Documents ERPNext creates without its mapper (Parts 4 and 5) take reno_order from their sources.
+	"Work Order": {"validate": "reno_order.erpnext_flow.links.inherit_reno_order"},
+	"Material Request": {"validate": "reno_order.erpnext_flow.links.inherit_reno_order"},
+	"Purchase Order": {"validate": "reno_order.erpnext_flow.links.inherit_reno_order"},
 	"Leave Type": {"validate": "reno_order.hr.leave_policy_assignment.validate_leave_type"},
 }
 
