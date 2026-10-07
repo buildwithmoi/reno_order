@@ -6,6 +6,8 @@ Everything here is idempotent, so it is safe to run on every `bench migrate`.
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
+from reno_order.setup.workflow import sync_workflow
+
 # Roles the app needs beyond ERPNext's standard Sales User / Sales Manager / Accounts User.
 ROLES = ("Production User", "Site Supervisor")
 
@@ -41,6 +43,7 @@ def before_install():
 
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS)
+	sync_workflow()
 
 
 def before_migrate():
@@ -50,6 +53,7 @@ def before_migrate():
 
 def after_migrate():
 	create_custom_fields(CUSTOM_FIELDS)
+	sync_workflow()
 
 
 def create_roles():
