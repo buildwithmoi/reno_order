@@ -95,12 +95,20 @@ def get_active_delivery_note(reno_order: str) -> str | None:
 
 
 def retry_failed_delivery_notes():
-	"""Hourly: re-queue failed automations that haven't used up their attempts."""
-	for name in frappe.get_all(
+	"""Hourly: re-queue failed automations that haven't used up their attempts, and orders stuck in
+	Queued (e.g. Redis was restarted and lost the job). Re-queuing an order whose job is still
+	waiting or running does nothing, thanks to `deduplicate`."""
+	failed = frappe.get_all(
 		"Reno Order",
 		filters={"delivery_status": "Failed", "delivery_attempts": ("<", MAX_ATTEMPTS), "docstatus": 1},
 		pluck="name",
-	):
+	)
+	stuck = frappe.get_all(
+		"Reno Order",
+		filters={"delivery_status": "Queued", "docstatus": 1, "status": ("in", DONE_STATUSES)},
+		pluck="name",
+	)
+	for name in failed + stuck:
 		queue_delivery_note(name)
 
 
