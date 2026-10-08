@@ -27,6 +27,20 @@ def site_supervisor_query(
 
 
 @frappe.whitelist()
+def get_customer_defaults(customer: str) -> dict:
+	"""The customer's default address and contact, in one call. (Frappe v16 doesn't whitelist
+	get_default_contact, so the form can't call it directly.)"""
+	from frappe.contacts.doctype.address.address import get_default_address
+	from frappe.contacts.doctype.contact.contact import get_default_contact
+
+	frappe.has_permission("Customer", "read", customer, throw=True)
+	return {
+		"customer_address": get_default_address("Customer", customer),
+		"contact_person": get_default_contact("Customer", customer),
+	}
+
+
+@frappe.whitelist()
 def get_item_defaults(item_code: str, company: str | None = None) -> dict:
 	"""Default selling rate and warehouse for a new item row."""
 	frappe.has_permission("Item", "read", throw=True)

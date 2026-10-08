@@ -7,8 +7,9 @@ from frappe.tests import IntegrationTestCase
 from PIL import Image
 
 from reno_order.api import supervisor as api
+from reno_order.api.queries import get_customer_defaults
 from reno_order.exceptions import InvalidInputError, InvalidStatusTransitionError
-from reno_order.tests.utils import advance, make_reno_order, make_user
+from reno_order.tests.utils import advance, make_customer, make_reno_order, make_user
 
 
 def png_bytes() -> bytes:
@@ -119,3 +120,61 @@ class TestSupervisorAPI(IntegrationTestCase):
 			api.attach_site_photo(self.order.name, "photo.jpg", b"MZ\x90\x00 definitely not an image")
 		with self.assertRaises(InvalidInputError):
 			api.attach_site_photo(self.order.name, "notes.pdf", png_bytes())
+
+
+class TestFormServerCalls(IntegrationTestCase):
+	"""The Reno Order form's calls to the server (Part 12)."""
+
+	def test_every_method_the_form_calls_is_whitelisted(self):
+		"""A browser can only call whitelisted methods. Frappe v16 doesn't whitelist some helpers older
+		code used (e.g. get_default_contact), and that only shows up in the browser, not in Python tests."""
+		import re
+		from pathlib import Path
+
+		app = Path(frappe.get_app_path("reno_order"))
+		sources = [path for path in app.rglob("*.js") if "node_modules" not in path.parts]
+		methods = {
+			method
+			for path in sources
+			for method in re.findall(r'xcall\(\s*"([\w.]+)"|method:\s*"([\w.]+)"', path.read_text())
+			for method in method
+			if method
+		}
+
+		self.assertIn("reno_order.api.queries.get_customer_defaults", methods)
+		for method in methods:
+			with self.subTest(method=method):
+				self.assertIn(frappe.get_attr(method), frappe.whitelisted)
+
+	def test_customer_defaults_returns_primary_address_and_contact(self):
+		customer = make_customer()
+		link = [{"link_doctype": "Customer", "link_name": customer}]
+		address = frappe.get_doc(
+			{
+				"doctype": "Address",
+				"address_title": customer,
+				"address_type": "Billing",
+				"address_line1": "12 Liberation Road",
+				"city": "Accra",
+				"country": frappe.db.get_value("Country", {}, "name"),
+				"is_primary_address": 1,
+				"links": link,
+			}
+		).insert()
+		contact = frappe.get_doc(
+			{"doctype": "Contact", "first_name": "Ama", "is_primary_contact": 1, "links": link}
+		).insert()
+
+		self.assertEqual(
+			get_customer_defaults(customer),
+			{"customer_address": address.name, "contact_person": contact.name},
+		)
+
+	def test_customer_defaults_need_read_access_to_the_customer(self):
+		customer = make_customer()
+		frappe.set_user(make_user("_test_reno_no_roles@example.com"))
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				get_customer_defaults(customer)
+		finally:
+			frappe.set_user("Administrator")

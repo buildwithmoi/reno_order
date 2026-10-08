@@ -19,5 +19,5 @@ All notable changes to this app. The format follows [Keep a Changelog](https://k
 - **Patch** backfilling `order_type` for existing orders: keyset batches, idempotent.
 - **Monthly Reno Order Value** report with a covering index. Developer tooling to reproduce the 100k-row measurements.
 - **HRMS fix:** Leave Types flagged *Fixed Entitlement* are no longer prorated for mid-year joiners (`extend_doctype_class` mixin, no HRMS core change).
-- **80 integration tests**, a CI workflow on a fresh Frappe v16 + ERPNext + HRMS site, and linting (pre-commit, Semgrep, pip-audit).
+- **83 integration tests**, a CI workflow on a fresh Frappe v16 + ERPNext + HRMS site, and linting (pre-commit, Semgrep, pip-audit).
 - **Documentation:** architecture, ERPNext integration, API, integrations, debugging, performance, data migration, CI/CD, manufacturing and buying, HRMS leave analysis, production operations.

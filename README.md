@@ -58,7 +58,7 @@ To try the logistics integration locally, see [docs/integrations.md](docs/integr
 ## Testing
 ```bash
 bench --site <site> set-config allow_tests true
-bench --site <site> run-tests --app reno_order                    # 80 tests
+bench --site <site> run-tests --app reno_order                    # 83 tests
 bench --site <site> run-tests --app reno_order --module reno_order.tests.test_api
 ```
 On an empty site, the app's `before_tests` hook completes ERPNext's setup wizard first.
@@ -107,7 +107,7 @@ reno_order/
   devtools/perf.py      100k-row seeding and EXPLAIN/timing measurements
   permissions.py        row-level rules; tasks.py: scheduled jobs
   hr/                   HRMS override: fixed-entitlement leave (Part 13)
-  tests/                80 integration tests
+  tests/                83 integration tests
 mock_services/          standalone mock logistics provider
 docs/                   design notes and the written answers
 ```

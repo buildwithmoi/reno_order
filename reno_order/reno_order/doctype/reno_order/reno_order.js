@@ -51,12 +51,13 @@ frappe.ui.form.on("Reno Order", {
 			frm.set_value({ customer_address: null, contact_person: null });
 			return;
 		}
-		const args = { doctype: "Customer", name: frm.doc.customer };
-		const [address, contact] = await Promise.all([
-			frappe.xcall("frappe.contacts.doctype.address.address.get_default_address", args),
-			frappe.xcall("frappe.contacts.doctype.contact.contact.get_default_contact", args),
-		]);
-		frm.set_value({ customer_address: address || null, contact_person: contact || null });
+		const defaults = await frappe.xcall("reno_order.api.queries.get_customer_defaults", {
+			customer: frm.doc.customer,
+		});
+		frm.set_value({
+			customer_address: defaults.customer_address || null,
+			contact_person: defaults.contact_person || null,
+		});
 	},
 
 	async customer_address(frm) {
